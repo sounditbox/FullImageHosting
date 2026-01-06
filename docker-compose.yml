@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:17
+    container_name: postgres_ih
+    env_file: .env
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend
+
+  app:
+    build: ./app/
+    container_name: app_ih
+    env_file: .env
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./images:/app/images
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+    depends_on:
+      db:
+        condition: service_healthy
+
+    networks:
+      - backend
+      - frontend
+
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_ih
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./static:/usr/share/nginx/html/static
+      - ./images:/usr/share/nginx/html/images
+      - ./logs:/var/log/nginx/
+    ports:
+      - '80:80'
+    networks:
+      - frontend
+    depends_on:
+      - app
+
+
+volumes:
+  db_data:
+
+networks:
+  backend:
+  frontend:

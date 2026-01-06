@@ -1,3 +1,10 @@
 .idea
 .venv
 .env
+
+images/*
+!images/.gitkeep
+backups/*
+!backups/.gitkeep
+logs/*
+!logs/.gitkeep
