@@ -282,9 +282,9 @@ CREATE TABLE images (
 Пример подключения:
 
 ```python
-import psycopg2
+import psycopg
 
-conn = psycopg2.connect(
+conn = psycopg.connect(
     dbname="images_db",
     user="postgres",
     password="password",

@@ -1,5 +1,5 @@
 services:
-  db:
+  postgres:
     image: postgres:17
     container_name: postgres_ih
     env_file: .env
@@ -13,7 +13,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 1s
+    # command: ["postgres", "-c", "log_statement=all"]
     networks:
       - backend
 
@@ -27,8 +28,9 @@ services:
       - ./images:/app/images
       - ./logs:/app/logs
       - ./backups:/app/backups
+      - ./app:/app
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
 
     networks:
