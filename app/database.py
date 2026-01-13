@@ -37,7 +37,7 @@ def fetch_query(query, params=None):
                 logger.info(f"Query {query} executed successfully. Params: {params}. result: {result}")
                 return result
     except Exception as e:
-        logger.error(log_fail, e)
+        logger.error(f'Failed to execute query: {e}')
         raise
 
 
