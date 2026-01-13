@@ -21,13 +21,23 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         logger.info(f"GET request, path = {parsed_path}")
 
         if parsed_path.path == "/images/":
-            self.send_json(get_images_metadata())
+            images = get_images_metadata()
+            images = [
+                {
+                    'filename': i[1],
+                    'original_filename': i[2],
+                    'size': i[3],
+                    'date': i[4].strftime("%Y-%m-%d %H:%M:%S"),
+                    'type': i[5]
+                }
+                for i in images
+            ]
+
+            self.send_json(images)
         elif parsed_path.path.startswith("/images/"):
-            image_id = parsed_path.path.split("/")[2]
-            if not image_id.isdigit():
-                self.send_json({"error": "Invalid image ID"}, 404)
+            filename = parsed_path.path.split("/")[2]
             try:
-                data = get_image_metadata(image_id)
+                data = get_image_metadata(filename)
                 self.send_json(data)
             except Exception as e:
                 self.send_json({"error": str(e)}, 404)
@@ -70,11 +80,9 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         logger.info(f"DELETE request, path = {parsed_path.path}")
 
         if self.path.startswith("/images/"):
-            image_id = parsed_path.path.split("/")[2]
-            if not image_id.isdigit():
-                self.send_json({"error": "Invalid image ID"}, 404)
+            filename = parsed_path.path.split("/")[2]
             try:
-                delete_metadata(image_id)
+                delete_metadata(filename)
                 delete_file(filename)
                 self.send_json({}, 204)
             except Exception as e:
