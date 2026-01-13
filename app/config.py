@@ -12,7 +12,8 @@ DB_CONFIG = {
     "dbname": os.getenv("POSTGRES_DB")
 }
 
-FILE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif"]
+FILE_EXTENSIONS = ["jpg", "jpeg", "png", "gif"]
 MAX_FILE_SIZE = 5 * 1024 * 1024 # 5MB
 HOST, PORT = ('0.0.0.0', 8000)
 DEBUG = True
+IMAGE_DIR = 'images'

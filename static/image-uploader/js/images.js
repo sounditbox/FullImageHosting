@@ -147,7 +147,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     fileUpload.addEventListener('change', (event) => {
-        handleAndStoreFiles(event.target.files);
+        const file = event.target.files[0];
+        if (!file) return;
+        try {
+            const response = fetch('http://localhost/upload', {
+              method: 'POST',
+              headers: {'X-Filename': file.name},
+              body: file,
+            });
+
+            if (response.status == 201) {
+              const result = response.json();
+              console.log('File uploaded successfully:', result);
+            } else {
+              console.error('Upload failed:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error during upload:', error);
+        }
+        // handleAndStoreFiles(event.target.files);
         event.target.value = '';
     });
 

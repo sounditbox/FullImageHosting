@@ -5,7 +5,9 @@ import urllib
 
 from database import (get_images_metadata,
                       get_image_metadata,
-                      delete_metadata)
+                      delete_metadata,
+                      save_metadata)
+from utils import save_file, validate_image, generate_unique_name, delete_file
 
 logger = logging.getLogger(__name__)
 
@@ -34,20 +36,33 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         """Handle POST requests."""
-        # content_length = int(self.headers['Content-Length'])  # Get the size of data
-        # post_data = self.rfile.read(content_length)  # Get the data itself
-        # try:
-        #     data = json.loads(post_data)
-        #     response_message = f"Received POST data: {data}"
-        # except json.JSONDecodeError:
-        #     response_message = f"Received raw POST data: {post_data.decode('utf-8')}"
-        #
-        # self.send_response(200)
-        # self.send_header("Content-type", "application/json")
-        # self.end_headers()
-        # response = {"status": "success", "message": response_message}
-        # self.wfile.write(json.dumps(response).encode("utf-8"))
-        pass
+        parsed_path = urllib.parse.urlparse(self.path)
+        logger.info(f"POST request, path = {parsed_path.path}")
+
+        if parsed_path.path == '/upload':
+            content_length = int(self.headers.get('Content-Length', 0))
+            if content_length == 0:
+                return self.send_json({'error': 'No file uploaded'}, 400)
+
+            filename = self.headers.get('X-Filename', '')
+            if not filename:
+                return self.send_json({'error': 'Set the filename in X-Filename header'}, 400)
+            *filename, ext = filename.split('.')
+            filename = '.'.join(filename)
+            post_data = self.rfile.read(content_length)
+
+            try:
+                validate_image(post_data, ext)
+            except Exception as e:
+                return self.send_json({'error': str(e)}, 400)
+
+            unique_name = f'{generate_unique_name(filename)}.{ext}'
+            save_metadata(unique_name, f'{filename}.{ext}', content_length // 1024, ext)
+            save_file(unique_name, post_data)
+
+            return self.send_json({'result': 'success'}, 201)
+        else:
+            return self.send_json({"error": "Not found"}, 404)
 
     def do_DELETE(self):
         """Handle DELETE requests."""
@@ -60,6 +75,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 self.send_json({"error": "Invalid image ID"}, 404)
             try:
                 delete_metadata(image_id)
+                delete_file(filename)
                 self.send_json({}, 204)
             except Exception as e:
                 self.send_json({"error": str(e)}, 404)
