@@ -2,6 +2,7 @@ import http
 import json
 import logging
 import urllib
+from urllib.parse import parse_qs
 
 from database import (get_images_metadata,
                       get_image_metadata,
@@ -20,8 +21,12 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         parsed_path = urllib.parse.urlparse(self.path)
         logger.info(f"GET request, path = {parsed_path}")
 
-        if parsed_path.path == "/images/":
-            images = get_images_metadata()
+        page = int(parse_qs(parsed_path.query).get('page', [1])[0])
+        page_size = int(parse_qs(parsed_path.query).get('page_size', [10])[0])
+        logger.info(f'page, page_size: {page}, {page_size}')
+
+        if parsed_path.path == "/get_images/":
+            images = get_images_metadata(page, page_size)
             images = [
                 {
                     'filename': i[1],
@@ -70,7 +75,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             save_metadata(unique_name, f'{filename}.{ext}', content_length // 1024, ext)
             save_file(unique_name, post_data)
 
-            return self.send_json({'result': 'success'}, 201)
+            return self.send_json({'result': 'success', 'url': f'http://localhost/images/{unique_name}'}, 201)
         else:
             return self.send_json({"error": "Not found"}, 404)
 
@@ -79,7 +84,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         parsed_path = urllib.parse.urlparse(self.path)
         logger.info(f"DELETE request, path = {parsed_path.path}")
 
-        if self.path.startswith("/images/"):
+        if self.path.startswith("/delete_image/"):
             filename = parsed_path.path.split("/")[2]
             try:
                 delete_metadata(filename)

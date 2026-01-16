@@ -74,11 +74,14 @@ def delete_metadata(filename):
     log_fail = "Failed to delete metadata"
     execute_query(query, log_success, log_fail, (filename,))
 
-def get_images_metadata() -> list:
+def get_images_metadata(page=1, page_size=10) -> list:
+    offset = (page - 1) * page_size
     query = """
-        SELECT * FROM images
+        SELECT * FROM images 
+        ORDER BY upload_time DESC 
+        LIMIT %s OFFSET %s;
     """
-    return fetch_query(query)
+    return fetch_query(query, (page_size, offset))
 
 def get_image_metadata(filename) -> list:
     query = """
