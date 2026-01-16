@@ -1,9 +1,11 @@
 import logging
+from datetime import datetime
+import os
 
 import psycopg
 from psycopg import Connection
 
-from config import DB_CONFIG
+from config import DB_CONFIG, BACKUP_DIR
 
 logger = logging.getLogger(__name__)
 
