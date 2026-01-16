@@ -1,5 +1,6 @@
 import logging
 import uuid
+import os
 
 from config import MAX_FILE_SIZE, FILE_EXTENSIONS, IMAGE_DIR
 

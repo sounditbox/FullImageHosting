@@ -66,13 +66,13 @@ def save_metadata(filename, original_name, size, file_type):
     execute_query(query, log_success, log_fail, (filename, original_name, size, file_type))
 
 
-def delete_metadata(image_id):
+def delete_metadata(filename):
     query = """
-        DELETE FROM images WHERE id = %s
+        DELETE FROM images WHERE filename = %s
     """
     log_success = "Metadata deleted successfully"
     log_fail = "Failed to delete metadata"
-    execute_query(query, log_success, log_fail, (image_id,))
+    execute_query(query, log_success, log_fail, (filename,))
 
 def get_images_metadata() -> list:
     query = """
@@ -80,11 +80,11 @@ def get_images_metadata() -> list:
     """
     return fetch_query(query)
 
-def get_image_metadata(image_id) -> list:
+def get_image_metadata(filename) -> list:
     query = """
-        SELECT * FROM images WHERE id = %s
+        SELECT * FROM images WHERE filename = %s
     """
-    result = fetch_query(query, (image_id,))
+    result = fetch_query(query, (filename,))
     if not result:
         raise Exception("Image not found")
     return result[0]
